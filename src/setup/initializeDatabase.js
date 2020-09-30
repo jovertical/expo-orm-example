@@ -8,9 +8,7 @@ export default (db) => {
           create table if not exists posts (
             id integer primary key not null,
             title varchar not null,
-            body varchar,
-            created_at timestamp not null,
-            updated_at timestamp not null
+            body varchar
           )
         `)
 
@@ -19,8 +17,6 @@ export default (db) => {
             id integer primary key not null,
             post_id unsigned integer not null,
             body varchar,
-            created_at timestamp not null,
-            updated_at timestamp not null,
 
             constraint fk_posts
               foreign key (post_id) 
