@@ -9,11 +9,11 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import * as SQLite from 'expo-sqlite'
-import { QueryBuilder } from 'expo-orm'
+import { Database } from 'expo-orm'
 import initializeDatabase from './setup/initializeDatabase'
 import seedPosts from './setup/seedPosts'
 
-const db = SQLite.openDatabase('example.db')
+const db = SQLite.openDatabase('database.db')
 
 export default function App() {
   const [posts, setPosts] = React.useState([])
@@ -27,14 +27,15 @@ export default function App() {
   }
 
   async function update() {
-    const query = new QueryBuilder(db, 'posts')
-    await query.where('id', '=', currentPost.id).update({ title, body })
+    await Database.table('posts')
+      .where('id', '=', currentPost.id)
+      .update({ title, body })
+
     await fetchPosts()
   }
 
   async function prepareUpdate(id) {
-    const query = new QueryBuilder(db, 'posts')
-    const post = await query.where('id', '=', id).first()
+    const post = await Database.table('posts').find(id)
 
     setCurrentPost(post)
     setTitle(post.title || '')
@@ -42,23 +43,19 @@ export default function App() {
   }
 
   async function destroy(id) {
-    const query = new QueryBuilder(db, 'posts')
-    await query.where('id', '=', id).delete()
+    await Database.table('posts').where('id', '=', id).delete()
     await fetchPosts()
     clear()
   }
 
   async function publish() {
-    const query = new QueryBuilder(db, 'posts')
-    await query.insert({ title, body })
+    await Database.table('posts').insert({ title, body })
     await fetchPosts()
     clear()
   }
 
   async function fetchPosts() {
-    const query = new QueryBuilder(db, 'posts')
-    const posts = await query.get()
-
+    const posts = await Database.table('posts').get()
     setPosts(posts)
   }
 
