@@ -17,27 +17,47 @@ const db = SQLite.openDatabase('example.db')
 
 export default function App() {
   const [posts, setPosts] = React.useState([])
+  const [currentPost, setCurrentPost] = React.useState(null)
   const [title, setTitle] = React.useState('')
   const [body, setBody] = React.useState('')
 
-  async function deletePost(id) {
+  function clear() {
+    setTitle('')
+    setBody('')
+  }
+
+  async function update() {
+    const query = new QueryBuilder(db, 'posts')
+    await query.where('id', '=', currentPost.id).update({ title, body })
+    await fetchPosts()
+  }
+
+  async function prepareUpdate(id) {
+    const query = new QueryBuilder(db, 'posts')
+    const post = await query.where('id', '=', id).first()
+
+    setCurrentPost(post)
+    setTitle(post.title || '')
+    setBody(post.body || '')
+  }
+
+  async function destroy(id) {
     const query = new QueryBuilder(db, 'posts')
     await query.where('id', '=', id).delete()
     await fetchPosts()
+    clear()
   }
 
   async function publish() {
     const query = new QueryBuilder(db, 'posts')
     await query.insert({ title, body })
     await fetchPosts()
-
-    setTitle('')
-    setBody('')
+    clear()
   }
 
   async function fetchPosts() {
     const query = new QueryBuilder(db, 'posts')
-    const posts = await query.selectAll()
+    const posts = await query.get()
 
     setPosts(posts)
   }
@@ -71,16 +91,25 @@ export default function App() {
           style={styles.textInput}
         />
 
-        <Button title="Publish" onPress={publish} />
+        {currentPost ? (
+          <Button title="Update" onPress={update} />
+        ) : (
+          <Button title="Publish" onPress={publish} />
+        )}
       </View>
 
       {posts.map((post) => (
         <TouchableOpacity
           key={post.id}
-          onLongPress={() => deletePost(post.id)}
+          onPress={() => prepareUpdate(post.id)}
           style={styles.post}
         >
-          <Text style={styles.title}>{post.title}</Text>
+          <View style={styles.header}>
+            <Text style={styles.title}>{post.title}</Text>
+            <Text onPress={() => destroy(post.id)} style={styles.delete}>
+              &times;
+            </Text>
+          </View>
           <Text>{post.body}</Text>
         </TouchableOpacity>
       ))}
@@ -118,8 +147,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
+  header: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
   title: {
     fontWeight: 'bold',
     fontSize: 18,
+  },
+
+  delete: {
+    fontSize: 20,
   },
 })
