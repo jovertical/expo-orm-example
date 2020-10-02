@@ -8,12 +8,10 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native'
-import * as SQLite from 'expo-sqlite'
 import { Database } from 'expo-orm'
+import Post from './models/Post'
 import initializeDatabase from './setup/initializeDatabase'
 import seedPosts from './setup/seedPosts'
-
-const db = SQLite.openDatabase('database.db')
 
 export default function App() {
   const [posts, setPosts] = React.useState([])
@@ -35,11 +33,11 @@ export default function App() {
   }
 
   async function prepareUpdate(id) {
-    const post = await Database.table('posts').find(id)
+    const post = await Post.find(id)
 
     setCurrentPost(post)
-    setTitle(post.title || '')
-    setBody(post.body || '')
+    setTitle(post?.title)
+    setBody(post?.body)
   }
 
   async function destroy(id) {
@@ -61,8 +59,9 @@ export default function App() {
 
   React.useEffect(() => {
     const bootstrap = async () => {
-      await initializeDatabase(db)
-      await seedPosts(db)
+      const db = Database.connection()
+      await initializeDatabase(db.getConnection())
+      await seedPosts(db.getConnection())
       fetchPosts()
     }
 
