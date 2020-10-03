@@ -30,6 +30,9 @@ export default function App() {
       .update({ title, body })
 
     await fetchPosts()
+
+    clear()
+    setCurrentPost(null)
   }
 
   async function prepareUpdate(id) {
@@ -47,7 +50,7 @@ export default function App() {
   }
 
   async function publish() {
-    await Database.table('posts').insert({ title, body })
+    await Post.create({ title, body })
     await fetchPosts()
     clear()
   }
