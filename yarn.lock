@@ -2462,6 +2462,8 @@ expo-location@~9.0.0:
 
 expo-orm@../expo-orm:
   version "0.1.0"
+  dependencies:
+    expo-sqlite "^8.4.0"
 
 expo-permissions@~9.3.0:
   version "9.3.0"

@@ -13,6 +13,8 @@ import Post from './models/Post'
 import initializeDatabase from './setup/initializeDatabase'
 import seedPosts from './setup/seedPosts'
 
+const db = Database.connect()
+
 export default function App() {
   const [posts, setPosts] = React.useState([])
   const [currentPost, setCurrentPost] = React.useState(null)
@@ -25,10 +27,7 @@ export default function App() {
   }
 
   async function update() {
-    await Database.table('posts')
-      .where('id', '=', currentPost.id)
-      .update({ title, body })
-
+    await Post.where('id', '=', currentPost.id).update({ title, body })
     await fetchPosts()
 
     clear()
@@ -44,7 +43,7 @@ export default function App() {
   }
 
   async function destroy(id) {
-    await Database.table('posts').where('id', '=', id).delete()
+    await Post.where('id', '=', id).delete()
     await fetchPosts()
     clear()
   }
@@ -56,13 +55,12 @@ export default function App() {
   }
 
   async function fetchPosts() {
-    const posts = await Database.table('posts').get()
+    const posts = await Post.get()
     setPosts(posts)
   }
 
   React.useEffect(() => {
     const bootstrap = async () => {
-      const db = Database.connection()
       await initializeDatabase(db.getConnection())
       await seedPosts(db.getConnection())
       fetchPosts()

@@ -1,4 +1,5 @@
 import { Model } from 'expo-orm'
+import { openDatabase } from 'expo-sqlite'
 
 export default class Post extends Model {
   /**
