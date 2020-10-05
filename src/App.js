@@ -35,7 +35,7 @@ export default function App() {
   }
 
   async function prepareUpdate(id) {
-    const post = await Post.find(id)
+    const post = await Post.find(id).then((post) => post.toJson())
 
     setCurrentPost(post)
     setTitle(post?.title)
