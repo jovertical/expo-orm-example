@@ -11,7 +11,7 @@ import {
 import { Database } from 'expo-orm'
 import Post from './models/Post'
 import initializeDatabase from './setup/initializeDatabase'
-import seedPosts from './setup/seedPosts'
+import seedData from './setup/seedData'
 
 const db = Database.connect()
 
@@ -35,7 +35,7 @@ export default function App() {
   }
 
   async function prepareUpdate(id) {
-    const post = await Post.find(id).then((post) => post.toJson())
+    const post = await Post.find(id)
 
     setCurrentPost(post)
     setTitle(post?.title)
@@ -49,20 +49,20 @@ export default function App() {
   }
 
   async function publish() {
-    await Post.create({ title, body })
+    await Post.create({ author_id: 1, title, body })
     await fetchPosts()
     clear()
   }
 
   async function fetchPosts() {
-    const posts = await Post.get()
+    const posts = await Post.with('author').get()
     setPosts(posts)
   }
 
   React.useEffect(() => {
     const bootstrap = async () => {
       await initializeDatabase(db.getConnection())
-      await seedPosts(db.getConnection())
+      await seedData(db.getConnection())
       fetchPosts()
     }
 
